@@ -3,12 +3,11 @@
  * Disabling ESLint rules for these dependencies since we know it is only for development purposes
  */
 
-import React, { useCallback, useEffect, useState, useRef } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ReactDOMClient from 'react-dom/client';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import styled, { createGlobalStyle } from 'styled-components';
-import shuffle from 'lodash/shuffle';
 import {
   useFocusable,
   init,
@@ -24,24 +23,6 @@ init({
   debug: false,
   visualDebug: false
 });
-
-const rows = shuffle([
-  {
-    title: 'Recommended'
-  },
-  {
-    title: 'Movies'
-  },
-  {
-    title: 'Series'
-  },
-  {
-    title: 'TV Channels'
-  },
-  {
-    title: 'Sport'
-  }
-]);
 
 const assets = [
   {
@@ -184,10 +165,11 @@ const AssetWrapper = styled.div`
 interface AssetBoxProps {
   focused: boolean;
   color: string;
+  index: number;
 }
 
 const AssetBox = styled.div<AssetBoxProps>`
-  width: 225px;
+  width: ${({ index }) => `${80 + index*30}px` };
   height: 127px;
   background-color: ${({ color }) => color};
   border-color: white;
@@ -206,6 +188,7 @@ const AssetTitle = styled.div`
 `;
 
 interface AssetProps {
+  index: number;
   title: string;
   color: string;
   onEnterPress: (props: object, details: KeyPressDetails) => void;
@@ -216,7 +199,7 @@ interface AssetProps {
   ) => void;
 }
 
-function Asset({ title, color, onEnterPress, onFocus }: AssetProps) {
+function Asset({ title, color, onEnterPress, onFocus, index }: AssetProps) {
   const { ref, focused } = useFocusable({
     onEnterPress,
     onFocus,
@@ -228,88 +211,9 @@ function Asset({ title, color, onEnterPress, onFocus }: AssetProps) {
 
   return (
     <AssetWrapper ref={ref}>
-      <AssetBox color={color} focused={focused} />
+      <AssetBox color={color} focused={focused} index={index} />
       <AssetTitle>{title}</AssetTitle>
     </AssetWrapper>
-  );
-}
-
-const ContentRowWrapper = styled.div`
-  margin-bottom: 37px;
-`;
-
-const ContentRowTitle = styled.div`
-  color: white;
-  margin-bottom: 22px;
-  font-size: 27px;
-  font-weight: 700;
-  font-family: 'Segoe UI';
-  padding-left: 60px;
-`;
-
-const ContentRowScrollingWrapper = styled.div`
-  overflow-x: auto;
-  overflow-y: hidden;
-  flex-shrink: 1;
-  flex-grow: 1;
-  padding-left: 60px;
-`;
-
-const ContentRowScrollingContent = styled.div`
-  display: flex;
-  flex-direction: row;
-`;
-
-interface ContentRowProps {
-  title: string;
-  onAssetPress: (props: object, details: KeyPressDetails) => void;
-  onFocus: (
-    layout: FocusableComponentLayout,
-    props: object,
-    details: FocusDetails
-  ) => void;
-}
-
-function ContentRow({
-  title: rowTitle,
-  onAssetPress,
-  onFocus
-}: ContentRowProps) {
-  const { ref, focusKey } = useFocusable({
-    onFocus
-  });
-
-  const scrollingRef = useRef(null);
-
-  const onAssetFocus = useCallback(
-    ({ x }: { x: number }) => {
-      scrollingRef.current.scrollTo({
-        left: x,
-        behavior: 'smooth'
-      });
-    },
-    [scrollingRef]
-  );
-
-  return (
-    <FocusContext.Provider value={focusKey}>
-      <ContentRowWrapper ref={ref}>
-        <ContentRowTitle>{rowTitle}</ContentRowTitle>
-        <ContentRowScrollingWrapper ref={scrollingRef}>
-          <ContentRowScrollingContent>
-            {assets.map(({ title, color }) => (
-              <Asset
-                key={title}
-                title={title}
-                color={color}
-                onEnterPress={onAssetPress}
-                onFocus={onAssetFocus}
-              />
-            ))}
-          </ContentRowScrollingContent>
-        </ContentRowScrollingWrapper>
-      </ContentRowWrapper>
-    </FocusContext.Provider>
   );
 }
 
@@ -355,11 +259,11 @@ const SelectedItemTitle = styled.div`
   font-family: 'Segoe UI';
 `;
 
-const ScrollingRows = styled.div`
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex-shrink: 1;
-  flex-grow: 1;
+const AssetsWrapper = styled.div`
+  position: relative;
+  display: ruby;
+  flex-direction: row;
+  align-items: center;
 `;
 
 function Content() {
@@ -370,16 +274,6 @@ function Content() {
   const onAssetPress = useCallback((asset: AssetProps) => {
     setSelectedAsset(asset);
   }, []);
-
-  const onRowFocus = useCallback(
-    ({ y }: { y: number }) => {
-      ref.current.scrollTo({
-        top: y,
-        behavior: 'smooth'
-      });
-    },
-    [ref]
-  );
 
   return (
     <FocusContext.Provider value={focusKey}>
@@ -395,18 +289,18 @@ function Content() {
               : 'Press "Enter" to select an asset'}
           </SelectedItemTitle>
         </SelectedItemWrapper>
-        <ScrollingRows ref={ref}>
-          <div>
-            {rows.map(({ title }) => (
-              <ContentRow
-                key={title}
-                title={title}
-                onAssetPress={onAssetPress}
-                onFocus={onRowFocus}
-              />
-            ))}
-          </div>
-        </ScrollingRows>
+
+        <AssetsWrapper ref={ref}>
+          {assets.map( (a, i) =>
+            <Asset
+              index={i}
+              title={a.title}
+              color={a.color}
+              onEnterPress={onAssetPress}
+              onFocus={()=>{}}
+            />
+          )}
+        </AssetsWrapper>
       </ContentWrapper>
     </FocusContext.Provider>
   );

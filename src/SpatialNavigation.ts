@@ -419,6 +419,7 @@ class SpatialNavigationService {
     const siblingCoordinateA = siblingA[coordinate];
     const siblingCoordinateB = siblingB[coordinate];
 
+/*
     const distancesToCompare = [];
 
     distancesToCompare.push(Math.abs(siblingCoordinateA - refCoordinateA));
@@ -427,6 +428,11 @@ class SpatialNavigationService {
     distancesToCompare.push(Math.abs(siblingCoordinateB - refCoordinateB));
 
     return Math.min(...distancesToCompare);
+*/
+    const refCoordinateCenter = (refCoordinateA + refCoordinateB) / 2;
+    const siblingCoordinateCenter = (siblingCoordinateA + siblingCoordinateB) / 2;
+    return Math.abs(refCoordinateCenter - siblingCoordinateCenter)
+
   }
 
   /**
